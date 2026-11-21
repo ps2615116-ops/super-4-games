@@ -1,32 +1,31 @@
-
 <!DOCTYPE html>
 <html lang="hi">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Super 4 Games - Block Puzzle</title>
+<title>Super 4 Games</title>
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#101329;color:white;font-family:Arial;text-align:center}
-header{padding:20px;background:linear-gradient(120deg,#6435ed,#ed318c)}
-h1{margin:0;font-size:29px}
-.container{max-width:460px;margin:auto;padding:15px}
+header{padding:18px;background:linear-gradient(120deg,#6435ed,#ed318c)}
+h1{margin:0;font-size:27px}
+.container{max-width:460px;margin:auto;padding:12px}
 .stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .stat{background:#252b4c;border-radius:12px;padding:12px 3px}
 .stat b{display:block;font-size:21px;margin-top:5px}
-#board{display:grid;grid-template-columns:repeat(8,1fr);gap:4px;max-width:370px;margin:18px auto;background:#202541;padding:6px;border-radius:12px}
-.cell{aspect-ratio:1;background:#353a55;border-radius:5px}
-.pieces{display:flex;justify-content:space-around;gap:8px;margin:15px 0}
-.piece{width:31%;min-height:100px;border:2px solid #424969;background:#252b4c;border-radius:12px;color:white;padding:8px}
+#board{display:grid;grid-template-columns:repeat(8,1fr);gap:4px;width:min(100%,370px);margin:15px auto;background:#202541;padding:6px;border-radius:12px;touch-action:manipulation}
+.cell{aspect-ratio:1;background:#353a55;border-radius:5px;min-width:0}
+.pieces{display:flex;justify-content:space-around;gap:7px;margin:15px 0}
+.piece{width:33%;min-height:105px;border:2px solid #424969;background:#252b4c;border-radius:12px;color:white;padding:5px}
 .piece.selected{border:2px solid #ffda44;background:#373c60}
-.mini{display:grid;grid-template-columns:repeat(3,18px);grid-template-rows:repeat(3,18px);gap:3px;justify-content:center;margin:8px auto}
-.mini i{display:block;border-radius:3px}
+.piece:disabled{opacity:.25}
+.mini{display:grid;gap:3px;justify-content:center;margin:8px auto}
+.mini i{display:block;width:18px;height:18px;border-radius:3px}
 button{cursor:pointer}
-.action{border:0;border-radius:12px;padding:13px 20px;background:#ed318c;color:white;font-size:16px;margin:5px}
-#home{padding-top:20px}
-.gamebtn{width:100%;padding:20px;background:#272e54;color:white;border:2px solid #514a9c;border-radius:15px;font-size:20px}
+.action,.gamebtn{border:0;border-radius:12px;padding:13px 18px;background:#ed318c;color:white;font-size:16px;margin:5px}
+.gamebtn{width:100%;padding:20px;font-size:20px}
 #game{display:none}
-#message{min-height:24px;color:#ffdb54}
+#message{min-height:40px;color:#ffdb54}
 </style>
 </head>
 <body>
@@ -50,7 +49,7 @@ button{cursor:pointer}
 <div class="stat">🏆 Best<b id="best">0</b></div>
 <div class="stat">🎯 Level<b id="level">1</b></div>
 </div>
-<p id="message">एक ब्लॉक चुनें और बोर्ड पर जगह चुनें।</p>
+<p id="message">पहले ब्लॉक चुनें, फिर बोर्ड पर जगह टच करें।</p>
 <div id="board"></div>
 <h3>अपना ब्लॉक चुनें</h3>
 <div class="pieces" id="pieces"></div>
@@ -70,8 +69,10 @@ const shapes=[
 [[0,0],[1,0],[0,1],[1,1]],
 [[0,0],[1,0],[2,0],[1,1]],
 [[0,0],[0,1],[1,1],[1,2]],
-[[0,0],[1,0],[2,0],[3,0]]
+[[0,0],[1,0],[2,0],[3,0]],
+[[0,0],[0,1],[1,0],[1,1],[2,0],[2,1]]
 ];
+
 let board=[],pieces=[],selected=0,score=0,over=false;
 let best=Number(localStorage.getItem('super4best')||0);
 const $=id=>document.getElementById(id);
@@ -81,90 +82,190 @@ $('home').style.display='none';
 $('game').style.display='block';
 newGame();
 }
+
 function goHome(){
 $('game').style.display='none';
 $('home').style.display='block';
 }
+
 function newGame(){
 board=Array.from({length:8},()=>Array(8).fill(null));
-score=0;over=false;
-$('message').textContent='एक ब्लॉक चुनें और बोर्ड पर जगह चुनें।';
-makePieces();render();
+score=0;
+over=false;
+selected=0;
+$('message').textContent='पहले ब्लॉक चुनें, फिर बोर्ड पर जगह टच करें।';
+makePieces();
+render();
 }
-function makePieces(){
-pieces=Array.from({length:3},()=>({
+
+function randomPiece(){
+return {
 shape:shapes[Math.floor(Math.random()*shapes.length)],
 color:colors[Math.floor(Math.random()*colors.length)]
-}));
-selected=0;showPieces();
+};
 }
+
+function makePieces(){
+pieces=Array.from({length:3},randomPiece);
+selected=0;
+showPieces();
+}
+
 function showPieces(){
-let el=$('pieces');el.innerHTML='';
+let el=$('pieces');
+el.innerHTML='';
+
 pieces.forEach((p,i)=>{
 let b=document.createElement('button');
 b.className='piece'+(selected===i?' selected':'');
-let mini=document.createElement('div');mini.className='mini';
+b.disabled=!p || over;
+
+if(p){
+let mini=document.createElement('div');
+mini.className='mini';
+
 let maxX=Math.max(...p.shape.map(a=>a[0]));
 let maxY=Math.max(...p.shape.map(a=>a[1]));
+
 mini.style.gridTemplateColumns=`repeat(${maxX+1},18px)`;
 mini.style.gridTemplateRows=`repeat(${maxY+1},18px)`;
-for(let n=0;n<(maxX+1)*(maxY+1);n++){
+
+for(let y=0;y<=maxY;y++){
+for(let x=0;x<=maxX;x++){
 let cell=document.createElement('i');
-if(p.shape.some(([x,y])=>y*(maxX+1)+x===n))cell.style.background=p.color;
+if(p.shape.some(([sx,sy])=>sx===x&&sy===y)){
+cell.style.background=p.color;
+}
 mini.appendChild(cell);
 }
+}
 b.appendChild(mini);
-b.onclick=()=>{if(over)return;selected=i;showPieces()};
+}else{
+b.textContent='✅';
+}
+
+b.onclick=()=>{
+if(over||!pieces[i])return;
+selected=i;
+showPieces();
+$('message').textContent='अब बोर्ड पर सही जगह टच करें।';
+};
 el.appendChild(b);
 });
 }
+
 function render(){
 $('score').textContent=score;
 $('best').textContent=best;
 $('level').textContent=Math.floor(score/100)+1;
-let el=$('board');el.innerHTML='';
-board.forEach((row,y)=>row.forEach((value,x)=>{
-let c=document.createElement('div');c.className='cell';
+
+let el=$('board');
+el.innerHTML='';
+
+board.forEach((row,y)=>{
+row.forEach((value,x)=>{
+let c=document.createElement('div');
+c.className='cell';
 if(value)c.style.background=value;
 c.onclick=()=>place(x,y);
 el.appendChild(c);
-}));
+});
+});
 }
+
 function canPlace(p,x,y){
 return p.shape.every(([dx,dy])=>
-x+dx<8&&y+dy<8&&x+dx>=0&&y+dy>=0&&!board[y+dy][x+dx]);
+x+dx<8&&y+dy<8&&
+x+dx>=0&&y+dy>=0&&
+!board[y+dy][x+dx]
+);
 }
-function place(x,y){
-if(over)return;
-let p=pieces[selected];if(!p)return;
-if(!canPlace(p,x,y)){
-$('message').textContent='यहाँ जगह नहीं है। दूसरी जगह चुनें!';
+
+function hasAnyMove(p){
+if(!p)return false;
+for(let y=0;y<8;y++){
+for(let x=0;x<8;x++){
+if(canPlace(p,x,y))return true;
+}
+}
+return false;
+}
+
+function checkGameOver(){
+if(pieces.every(p=>p===null)){
+makePieces();
 return;
 }
-p.shape.forEach(([dx,dy])=>board[y+dy][x+dx]=p.color);
-score+=p.shape.length;
-let fullRows=[],fullCols=[];
-for(let r=0;r<8;r++)if(board[r].every(v=>v))fullRows.push(r);
-for(let c=0;c<8;c++)if(board.every(row=>row[c]))fullCols.push(c);
-fullRows.forEach(r=>board[r].fill(null));
-fullCols.forEach(c=>{for(let r=0;r<8;r++)board[r][c]=null});
-let cleared=fullRows.length+fullCols.length;
-if(cleared)score+=cleared*20+cleared*cleared*10;
-if(score>best){
-best=score;localStorage.setItem('super4best',best);
-}
-pieces[selected]=null;
-if(pieces.every(v=>v===null))makePieces();
-else showPieces();
-render();
-if(cleared)$('message').textContent='✨ शानदार! '+cleared+' लाइन क्लियर!';
-else $('message').textContent='अच्छा खेल रहे हैं! अगला ब्लॉक चुनें।';
-if(!pieces.some(p=>p&&board.some((row,y)=>row.some((v,x)=>canPlace(p,x,y))))){
+if(!pieces.some(p=>p&&hasAnyMove(p))){
 over=true;
-$('message').textContent='🏆 Game Over! आपका स्कोर: '+score;
-setTimeout(()=>alert('Game Over! Score: '+score+' | New Game दबाकर फिर खेलें।'),100);
+showPieces();
+$('message').textContent='🏆 GAME OVER! आपका स्कोर: '+score;
+setTimeout(()=>{
+alert('Game Over! Score: '+score+' | New Game दबाकर फिर खेलें।');
+},100);
 }
 }
+
+function place(x,y){
+if(over)return;
+
+let p=pieces[selected];
+if(!p){
+$('message').textContent='पहले कोई नया ब्लॉक चुनें!';
+return;
+}
+
+if(!canPlace(p,x,y)){
+$('message').textContent='❌ यहाँ जगह नहीं है। दूसरी जगह चुनें!';
+return;
+}
+
+p.shape.forEach(([dx,dy])=>{
+board[y+dy][x+dx]=p.color;
+});
+
+score+=p.shape.length;
+
+let rows=[],cols=[];
+
+for(let r=0;r<8;r++){
+if(board[r].every(v=>v))rows.push(r);
+}
+for(let c=0;c<8;c++){
+if(board.every(row=>row[c]))cols.push(c);
+}
+
+rows.forEach(r=>board[r].fill(null));
+cols.forEach(c=>{
+for(let r=0;r<8;r++)board[r][c]=null;
+});
+
+let cleared=rows.length+cols.length;
+if(cleared)score+=cleared*20+cleared*cleared*10;
+
+if(score>best){
+best=score;
+localStorage.setItem('super4best',best);
+}
+
+pieces[selected]=null;
+
+if(cleared){
+$('message').textContent='✨ शानदार! '+cleared+' लाइन क्लियर!';
+}else{
+$('message').textContent='🎉 अच्छा खेल रहे हैं!';
+}
+
+if(pieces.every(v=>v===null)){
+makePieces();
+}else{
+showPieces();
+}
+
+render();
+checkGameOver();
+}
+
 render();
 </script>
 </body>
