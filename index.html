@@ -1,272 +1,363 @@
+
 <!DOCTYPE html>
 <html lang="hi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Super 4 Games</title>
 <style>
 *{box-sizing:border-box}
-body{margin:0;background:#101329;color:white;font-family:Arial;text-align:center}
-header{padding:18px;background:linear-gradient(120deg,#6435ed,#ed318c)}
-h1{margin:0;font-size:27px}
-.container{max-width:460px;margin:auto;padding:12px}
-.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
-.stat{background:#252b4c;border-radius:12px;padding:12px 3px}
-.stat b{display:block;font-size:21px;margin-top:5px}
-#board{display:grid;grid-template-columns:repeat(8,1fr);gap:4px;width:min(100%,370px);margin:15px auto;background:#202541;padding:6px;border-radius:12px;touch-action:manipulation}
-.cell{aspect-ratio:1;background:#353a55;border-radius:5px;min-width:0}
-.pieces{display:flex;justify-content:space-around;gap:7px;margin:15px 0}
-.piece{width:33%;min-height:105px;border:2px solid #424969;background:#252b4c;border-radius:12px;color:white;padding:5px}
-.piece.selected{border:2px solid #ffda44;background:#373c60}
-.piece:disabled{opacity:.25}
-.mini{display:grid;gap:3px;justify-content:center;margin:8px auto}
-.mini i{display:block;width:18px;height:18px;border-radius:3px}
-button{cursor:pointer}
-.action,.gamebtn{border:0;border-radius:12px;padding:13px 18px;background:#ed318c;color:white;font-size:16px;margin:5px}
-.gamebtn{width:100%;padding:20px;font-size:20px}
-#game{display:none}
-#message{min-height:40px;color:#ffdb54}
+body{margin:0;background:#090e25;color:white;font-family:Arial;text-align:center}
+header{padding:22px;background:linear-gradient(120deg,#7b2ff7,#f107a3)}
+h1{margin:0;font-size:30px;text-shadow:0 3px 8px #000}
+header p{margin:7px 0 0}
+.container{padding:15px;max-width:650px;margin:auto}
+.screen{display:none}
+.screen.active{display:block}
+.games{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.game{
+border:2px solid #ffffff25;border-radius:18px;
+padding:20px 8px;background:linear-gradient(145deg,#202c58,#11152e);
+color:white;font-size:19px;font-weight:bold;cursor:pointer;
+box-shadow:0 5px 15px #0008;min-height:135px
+}
+.game span{display:block;font-size:43px;margin-bottom:10px}
+button{cursor:pointer;border:0}
+.back,.action{
+background:linear-gradient(120deg,#ff9a00,#ff3d81);
+color:white;padding:12px 20px;border-radius:12px;
+font-size:16px;font-weight:bold;margin:8px
+}
+.score{font-size:20px;color:#ffe66d;margin:12px}
+#candyBoard{
+display:grid;grid-template-columns:repeat(8,1fr);gap:4px;
+max-width:400px;margin:15px auto;touch-action:none
+}
+.candy{
+aspect-ratio:1;border-radius:10px;font-size:clamp(19px,6vw,32px);
+background:linear-gradient(145deg,#394b85,#182344);
+box-shadow:inset 0 2px 5px #ffffff55,0 3px 4px #0008;
+border:1px solid #ffffff22;padding:0
+}
+.candy.selected{outline:3px solid white;transform:scale(.91)}
+#blockBoard{
+display:grid;grid-template-columns:repeat(8,1fr);gap:3px;
+max-width:360px;margin:15px auto
+}
+.cell{aspect-ratio:1;background:#273252;border-radius:5px}
+.cell.filled{background:linear-gradient(135deg,#ffdd40,#ff7b00);box-shadow:inset 0 2px 5px #fff8}
+.shapes{display:flex;justify-content:center;gap:12px;flex-wrap:wrap}
+.shape{background:#26365e;padding:12px;border-radius:12px;color:white;font-size:22px;min-width:75px}
+.shape.active{outline:3px solid #ffdf45}
+#carCanvas{width:100%;max-width:360px;background:#242b37;border:3px solid #687b9d;border-radius:15px;display:block;margin:12px auto}
+.controls{display:flex;justify-content:center;gap:30px}
+.controls button{font-size:28px;width:90px;height:55px;border-radius:13px;background:#354c83;color:white}
+#memoryBoard{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;max-width:390px;margin:20px auto}
+.memory{aspect-ratio:1;background:linear-gradient(135deg,#763cf4,#e23a9a);border-radius:12px;font-size:32px;color:white}
+.memory.open{background:#253a62}
+.small{color:#bbc6e9;font-size:14px}
 </style>
 </head>
 <body>
+
 <header>
 <h1>🎮 SUPER 4 GAMES</h1>
-<p>PLAY • ENJOY • WIN</p>
+<p>Play • Enjoy • Challenge Yourself</p>
 </header>
 
-<div class="container" id="home">
-<h2>Choose Your Game</h2>
-<button class="gamebtn" onclick="startGame()">🧩 BLOCK PUZZLE</button>
-<p>🍬 Candy Match - Coming Soon</p>
-<p>🏎️ Car Racing - Coming Soon</p>
-<p>🐍 Snake Game - Coming Soon</p>
+<div class="container">
+
+<div id="home" class="screen active">
+<h2>अपना गेम चुनें 👇</h2>
+<div class="games">
+<button class="game" onclick="openGame('candy')"><span>🍬</span>Candy Puzzle</button>
+<button class="game" onclick="openGame('car')"><span>🏎️</span>Car Racing</button>
+<button class="game" onclick="openGame('block')"><span>🧩</span>Block Puzzle</button>
+<button class="game" onclick="openGame('memory')"><span>🧠</span>Memory Match</button>
+</div>
+<p class="small">Super 4 Games - Have Fun!</p>
 </div>
 
-<div class="container" id="game">
-<h2>🧩 BLOCK PUZZLE</h2>
-<div class="stats">
-<div class="stat">⭐ Score<b id="score">0</b></div>
-<div class="stat">🏆 Best<b id="best">0</b></div>
-<div class="stat">🎯 Level<b id="level">1</b></div>
+<div id="candy" class="screen">
+<button class="back" onclick="home()">← वापस</button>
+<h2>🍬 Candy Swipe Puzzle</h2>
+<div class="score">स्कोर: <span id="candyScore">0</span></div>
+<p class="small">दो पास-पास की कैंडी को Swipe करके बदलें।</p>
+<div id="candyBoard"></div>
+<button class="action" onclick="newCandy()">नया गेम</button>
 </div>
-<p id="message">पहले ब्लॉक चुनें, फिर बोर्ड पर जगह टच करें।</p>
-<div id="board"></div>
-<h3>अपना ब्लॉक चुनें</h3>
-<div class="pieces" id="pieces"></div>
-<button class="action" onclick="newGame()">🔄 New Game</button>
-<button class="action" onclick="goHome()">🏠 Home</button>
+
+<div id="car" class="screen">
+<button class="back" onclick="home()">← वापस</button>
+<h2>🏎️ Car Racing</h2>
+<div class="score">स्कोर: <span id="carScore">0</span></div>
+<canvas id="carCanvas" width="360" height="500"></canvas>
+<div class="controls">
+<button id="leftBtn">⬅️</button>
+<button id="rightBtn">➡️</button>
+</div>
+<button class="action" onclick="startCar()">Start / Restart</button>
+<p class="small">कार को दूसरी गाड़ियों से बचाएँ।</p>
+</div>
+
+<div id="block" class="screen">
+<button class="back" onclick="home()">← वापस</button>
+<h2>🧩 Block Puzzle</h2>
+<div class="score">स्कोर: <span id="blockScore">0</span></div>
+<p class="small">पहले ब्लॉक चुनें, फिर बोर्ड पर जगह चुनें।</p>
+<div id="blockBoard"></div>
+<div class="shapes" id="shapes"></div>
+<button class="action" onclick="newBlock()">नया गेम</button>
+</div>
+
+<div id="memory" class="screen">
+<button class="back" onclick="home()">← वापस</button>
+<h2>🧠 Memory Match</h2>
+<div class="score">चालें: <span id="moves">0</span></div>
+<p class="small">एक जैसी दो तस्वीरें मिलाएँ।</p>
+<div id="memoryBoard"></div>
+<button class="action" onclick="newMemory()">नया गेम</button>
+</div>
+
 </div>
 
 <script>
-const colors=['#ffbd35','#28c5ff','#ff4f80','#55df80','#ad76ff'];
-const shapes=[
-[[0,0]],
-[[0,0],[1,0]],
-[[0,0],[0,1]],
-[[0,0],[1,0],[2,0]],
-[[0,0],[0,1],[0,2]],
-[[0,0],[1,0],[0,1]],
-[[0,0],[1,0],[0,1],[1,1]],
-[[0,0],[1,0],[2,0],[1,1]],
-[[0,0],[0,1],[1,1],[1,2]],
-[[0,0],[1,0],[2,0],[3,0]],
-[[0,0],[0,1],[1,0],[1,1],[2,0],[2,1]]
-];
-
-let board=[],pieces=[],selected=0,score=0,over=false;
-let best=Number(localStorage.getItem('super4best')||0);
-const $=id=>document.getElementById(id);
-
-function startGame(){
-$('home').style.display='none';
-$('game').style.display='block';
-newGame();
+function openGame(id){
+document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+document.getElementById(id).classList.add('active');
+if(id==='candy' && !candyReady)newCandy();
+if(id==='block' && !blockReady)newBlock();
+if(id==='memory' && !memoryReady)newMemory();
+if(id==='car')drawCar();
 }
-
-function goHome(){
-$('game').style.display='none';
-$('home').style.display='block';
+function home(){
+carRunning=false;
+document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+document.getElementById('home').classList.add('active');
 }
+function shuffle(a){return a.sort(()=>Math.random()-.5)}
 
-function newGame(){
-board=Array.from({length:8},()=>Array(8).fill(null));
-score=0;
-over=false;
-selected=0;
-$('message').textContent='पहले ब्लॉक चुनें, फिर बोर्ड पर जगह टच करें।';
-makePieces();
-render();
+// CANDY GAME
+const candies=['🍬','🍭','🍒','🍇','🍊','🍉'];
+let candy=[],candyScore=0,selected=null,candyReady=false;
+function newCandy(){
+candyReady=true;candyScore=0;selected=null;
+document.getElementById('candyScore').textContent=0;
+candy=Array.from({length:64},()=>Math.floor(Math.random()*6));
+for(let i=0;i<8;i++)for(let j=0;j<8;j++){
+while(matchAt(i,j))candy[i*8+j]=Math.floor(Math.random()*6);
 }
-
-function randomPiece(){
-return {
-shape:shapes[Math.floor(Math.random()*shapes.length)],
-color:colors[Math.floor(Math.random()*colors.length)]
-};
+renderCandy();
 }
-
-function makePieces(){
-pieces=Array.from({length:3},randomPiece);
-selected=0;
-showPieces();
+function matchAt(r,c){
+let v=candy[r*8+c];
+return (c>=2&&candy[r*8+c-1]===v&&candy[r*8+c-2]===v)||
+(r>=2&&candy[(r-1)*8+c]===v&&candy[(r-2)*8+c]===v);
 }
-
-function showPieces(){
-let el=$('pieces');
-el.innerHTML='';
-
-pieces.forEach((p,i)=>{
-let b=document.createElement('button');
-b.className='piece'+(selected===i?' selected':'');
-b.disabled=!p || over;
-
-if(p){
-let mini=document.createElement('div');
-mini.className='mini';
-
-let maxX=Math.max(...p.shape.map(a=>a[0]));
-let maxY=Math.max(...p.shape.map(a=>a[1]));
-
-mini.style.gridTemplateColumns=`repeat(${maxX+1},18px)`;
-mini.style.gridTemplateRows=`repeat(${maxY+1},18px)`;
-
-for(let y=0;y<=maxY;y++){
-for(let x=0;x<=maxX;x++){
-let cell=document.createElement('i');
-if(p.shape.some(([sx,sy])=>sx===x&&sy===y)){
-cell.style.background=p.color;
-}
-mini.appendChild(cell);
-}
-}
-b.appendChild(mini);
-}else{
-b.textContent='✅';
-}
-
-b.onclick=()=>{
-if(over||!pieces[i])return;
-selected=i;
-showPieces();
-$('message').textContent='अब बोर्ड पर सही जगह टच करें।';
-};
-el.appendChild(b);
+function renderCandy(){
+let b=document.getElementById('candyBoard');b.innerHTML='';
+candy.forEach((v,i)=>{
+let btn=document.createElement('button');
+btn.className='candy'+(selected===i?' selected':'');
+btn.textContent=candies[v];
+btn.addEventListener('pointerdown',e=>{e.preventDefault(); candySelect(i)});
+b.appendChild(btn);
 });
 }
-
-function render(){
-$('score').textContent=score;
-$('best').textContent=best;
-$('level').textContent=Math.floor(score/100)+1;
-
-let el=$('board');
-el.innerHTML='';
-
-board.forEach((row,y)=>{
-row.forEach((value,x)=>{
-let c=document.createElement('div');
-c.className='cell';
-if(value)c.style.background=value;
-c.onclick=()=>place(x,y);
-el.appendChild(c);
-});
-});
+function candySelect(i){
+if(selected===null){selected=i;renderCandy();return}
+let a=selected,b=i;
+if(Math.abs(a-b)===8||(Math.floor(a/8)===Math.floor(b/8)&&Math.abs(a-b)===1)){
+[candy[a],candy[b]]=[candy[b],candy[a]];
+let found=clearMatches();
+if(found){selected=null;renderCandy();return}
+[candy[a],candy[b]]=[candy[b],candy[a]];
 }
-
-function canPlace(p,x,y){
-return p.shape.every(([dx,dy])=>
-x+dx<8&&y+dy<8&&
-x+dx>=0&&y+dy>=0&&
-!board[y+dy][x+dx]
-);
+selected=i;renderCandy();
 }
-
-function hasAnyMove(p){
-if(!p)return false;
-for(let y=0;y<8;y++){
-for(let x=0;x<8;x++){
-if(canPlace(p,x,y))return true;
+function clearMatches(){
+let set=new Set();
+for(let r=0;r<8;r++)for(let c=0;c<8;c++){
+let i=r*8+c,v=candy[i];
+if(c<6&&candy[i+1]===v&&candy[i+2]===v){
+let k=c;while(k<8&&candy[r*8+k]===v)set.add(r*8+k++);
+}
+if(r<6&&candy[i+8]===v&&candy[i+16]===v){
+let k=r;while(k<8&&candy[k*8+c]===v)set.add(k++*8+c);
 }
 }
-return false;
-}
-
-function checkGameOver(){
-if(pieces.every(p=>p===null)){
-makePieces();
-return;
-}
-if(!pieces.some(p=>p&&hasAnyMove(p))){
-over=true;
-showPieces();
-$('message').textContent='🏆 GAME OVER! आपका स्कोर: '+score;
-setTimeout(()=>{
-alert('Game Over! Score: '+score+' | New Game दबाकर फिर खेलें।');
-},100);
-}
-}
-
-function place(x,y){
-if(over)return;
-
-let p=pieces[selected];
-if(!p){
-$('message').textContent='पहले कोई नया ब्लॉक चुनें!';
-return;
-}
-
-if(!canPlace(p,x,y)){
-$('message').textContent='❌ यहाँ जगह नहीं है। दूसरी जगह चुनें!';
-return;
-}
-
-p.shape.forEach(([dx,dy])=>{
-board[y+dy][x+dx]=p.color;
-});
-
-score+=p.shape.length;
-
-let rows=[],cols=[];
-
-for(let r=0;r<8;r++){
-if(board[r].every(v=>v))rows.push(r);
-}
+if(!set.size)return false;
+candyScore+=set.size*10;
+document.getElementById('candyScore').textContent=candyScore;
+set.forEach(i=>candy[i]=-1);
 for(let c=0;c<8;c++){
-if(board.every(row=>row[c]))cols.push(c);
+let vals=[];
+for(let r=7;r>=0;r--)if(candy[r*8+c]!==-1)vals.push(candy[r*8+c]);
+while(vals.length<8)vals.push(Math.floor(Math.random()*6));
+for(let r=7;r>=0;r--)candy[r*8+c]=vals[7-r];
+}
+setTimeout(()=>{if(clearMatches())renderCandy()},120);
+return true;
 }
 
-rows.forEach(r=>board[r].fill(null));
-cols.forEach(c=>{
-for(let r=0;r<8;r++)board[r][c]=null;
+// BLOCK PUZZLE
+let blocks=Array(64).fill(0),blockScore=0,chosen=0,blockReady=false;
+const patterns=[
+[[0,0]],[[0,0],[0,1]],[[0,0],[0,1],[0,2]],
+[[0,0],[1,0],[1,1]],[[0,0],[1,0],[2,0],[2,1]],
+[[0,0],[0,1],[1,0],[1,1]],[[0,0],[0,1],[0,2],[1,1]]
+];
+function newBlock(){
+blockReady=true;blocks=Array(64).fill(0);blockScore=0;chosen=0;
+document.getElementById('blockScore').textContent=0;
+renderBlock();
+}
+function renderBlock(){
+let board=document.getElementById('blockBoard');board.innerHTML='';
+blocks.forEach((v,i)=>{
+let d=document.createElement('button');
+d.className='cell'+(v?' filled':'');
+d.onclick=()=>placeBlock(i);
+board.appendChild(d);
+});
+let box=document.getElementById('shapes');box.innerHTML='';
+patterns.forEach((p,i)=>{
+let b=document.createElement('button');
+b.className='shape'+(chosen===i?' active':'');
+b.textContent=p.map(()=> '🟨').join('');
+b.onclick=()=>{chosen=i;renderBlock()};
+box.appendChild(b);
+});
+}
+function placeBlock(index){
+let shape=patterns[chosen],r=Math.floor(index/8),c=index%8;
+if(shape.some(([y,x])=>r+y>=8||c+x>=8||blocks[(r+y)*8+c+x]))return;
+shape.forEach(([y,x])=>blocks[(r+y)*8+c+x]=1);
+blockScore+=shape.length*10;
+let cleared=0;
+for(let i=0;i<8;i++){
+if(blocks.slice(i*8,i*8+8).every(Boolean)){
+blocks.fill(0,i*8,i*8+8);cleared++;
+}
+let col=Array.from({length:8},(_,r)=>blocks[r*8+i]);
+if(col.every(Boolean)){
+for(let r=0;r<8;r++)blocks[r*8+i]=0;
+cleared++;
+}
+}
+blockScore+=cleared*100;
+document.getElementById('blockScore').textContent=blockScore;
+renderBlock();
+}
+
+// CAR RACING
+const canvas=document.getElementById('carCanvas');
+const ctx=canvas.getContext('2d');
+let carX=160,obstacles=[],carScore=0,carRunning=false,carFrame=0;
+let left=false,right=false;
+function drawCar(){
+ctx.clearRect(0,0,360,500);
+ctx.fillStyle='#303744';ctx.fillRect(0,0,360,500);
+ctx.fillStyle='#f7d34a';
+for(let y=-30;y<520;y+=90)ctx.fillRect(177,y+(carFrame%90),6,45);
+ctx.fillStyle='#20252e';ctx.fillRect(15,0,8,500);ctx.fillRect(337,0,8,500);
+function vehicle(x,y,color){
+ctx.fillStyle=color;ctx.fillRect(x,y,42,72);
+ctx.fillStyle='#bcecff';ctx.fillRect(x+7,y+12,28,19);
+ctx.fillStyle='#111';ctx.fillRect(x+5,y+58,8,12);ctx.fillRect(x+29,y+58,8,12);
+ctx.fillStyle='#fff';ctx.fillRect(x+4,y+3,8,5);ctx.fillRect(x+30,y+3,8,5);
+}
+vehicle(carX,405,'#12d9fa');
+obstacles.forEach(o=>vehicle(o.x,o.y,'#ff405c'));
+if(!carRunning){
+ctx.fillStyle='white';ctx.font='bold 24px Arial';ctx.textAlign='center';
+ctx.fillText('PRESS START',180,250);
+}
+}
+function startCar(){
+carX=160;obstacles=[];carScore=0;carFrame=0;carRunning=true;
+document.getElementById('carScore').textContent=0;
+requestAnimationFrame(carLoop);
+}
+function carLoop(){
+if(!carRunning)return;
+carFrame+=5;
+if(left)carX=Math.max(25,carX-5);
+if(right)carX=Math.min(293,carX+5);
+if(carFrame%75===0)obstacles.push({x:25+Math.floor(Math.random()*6)*52,y:-75});
+obstacles.forEach(o=>o.y+=5);
+obstacles=obstacles.filter(o=>o.y<520);
+for(let o of obstacles){
+if(o.x<carX+38&&o.x+42>carX&&o.y<477&&o.y+68>405){
+carRunning=false;
+ctx.fillStyle='white';ctx.font='bold 25px Arial';ctx.textAlign='center';
+ctx.fillText('GAME OVER!',180,250);
+return;
+}
+}
+if(carFrame%15===0){
+carScore++;document.getElementById('carScore').textContent=carScore;
+}
+drawCar();
+requestAnimationFrame(carLoop);
+}
+function control(key,on){
+if(key==='left')left=on;else right=on;
+}
+['leftBtn','rightBtn'].forEach((id,i)=>{
+let el=document.getElementById(id),key=i?'right':'left';
+el.addEventListener('pointerdown',e=>{e.preventDefault();control(key,true)});
+['pointerup','pointerleave','pointercancel'].forEach(ev=>el.addEventListener(ev,()=>control(key,false)));
+});
+document.addEventListener('keydown',e=>{
+if(e.key==='ArrowLeft')left=true;
+if(e.key==='ArrowRight')right=true;
+});
+document.addEventListener('keyup',e=>{
+if(e.key==='ArrowLeft')left=false;
+if(e.key==='ArrowRight')right=false;
 });
 
-let cleared=rows.length+cols.length;
-if(cleared)score+=cleared*20+cleared*cleared*10;
-
-if(score>best){
-best=score;
-localStorage.setItem('super4best',best);
+// MEMORY GAME
+let memoryReady=false,memoryCards=[],first=null,lock=false,moves=0;
+const emojis=['🐶','🐱','🦁','🐸','🐼','🐵','🦊','🐰'];
+function newMemory(){
+memoryReady=true;first=null;lock=false;moves=0;
+document.getElementById('moves').textContent=0;
+memoryCards=shuffle([...emojis,...emojis]);
+let board=document.getElementById('memoryBoard');board.innerHTML='';
+memoryCards.forEach((v,i)=>{
+let b=document.createElement('button');
+b.className='memory';b.textContent='❓';
+b.onclick=()=>flip(b,i);
+board.appendChild(b);
+});
 }
-
-pieces[selected]=null;
-
-if(cleared){
-$('message').textContent='✨ शानदार! '+cleared+' लाइन क्लियर!';
+function flip(btn,i){
+if(lock||btn.classList.contains('open')||btn.dataset.done)return;
+btn.textContent=memoryCards[i];btn.classList.add('open');
+if(first===null){first=btn;first.dataset.index=i;return}
+moves++;document.getElementById('moves').textContent=moves;
+let a=Number(first.dataset.index);
+if(memoryCards[a]===memoryCards[i]){
+first.dataset.done='1';btn.dataset.done='1';first=null;
+if(document.querySelectorAll('.memory[data-done="1"]').length===16){
+setTimeout(()=>alert('शानदार! आपने गेम जीत लिया! 🎉'),200);
+}
 }else{
-$('message').textContent='🎉 अच्छा खेल रहे हैं!';
+lock=true;let old=first;first=null;
+setTimeout(()=>{
+old.textContent='❓';btn.textContent='❓';
+old.classList.remove('open');btn.classList.remove('open');
+lock=false;
+},700);
+}
 }
 
-if(pieces.every(v=>v===null)){
-makePieces();
-}else{
-showPieces();
-}
-
-render();
-checkGameOver();
-}
-
-render();
+newCandy();
+newBlock();
+newMemory();
+drawCar();
 </script>
 </body>
 </html>
