@@ -1,120 +1,171 @@
+
 <!DOCTYPE html>
 <html lang="hi">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Super 4 Games</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Super 4 Games - Block Puzzle</title>
 <style>
 *{box-sizing:border-box}
 body{margin:0;background:#101329;color:white;font-family:Arial;text-align:center}
-header{padding:22px;background:linear-gradient(120deg,#6535e8,#ed318c)}
-h1{margin:5px}
-.container{padding:15px;max-width:480px;margin:auto}
-#board{display:grid;grid-template-columns:repeat(8,1fr);gap:5px;max-width:360px;margin:18px auto}
-.cell{aspect-ratio:1;background:#292e50;border-radius:6px}
-.pieces{display:flex;justify-content:center;gap:12px;flex-wrap:wrap}
-.piece{background:#343b67;border:2px solid #555d99;border-radius:12px;padding:12px;color:white;font-size:20px;min-width:80px}
-.selected{border-color:#ffcc32}
-.action{padding:12px 20px;margin:8px;border:0;border-radius:12px;background:#ed318c;color:white;font-size:16px}
-.stat{display:flex;justify-content:space-around;background:#252b4c;padding:12px;border-radius:12px}
+header{padding:20px;background:linear-gradient(120deg,#6435ed,#ed318c)}
+h1{margin:0;font-size:29px}
+.container{max-width:460px;margin:auto;padding:15px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.stat{background:#252b4c;border-radius:12px;padding:12px 3px}
+.stat b{display:block;font-size:21px;margin-top:5px}
+#board{display:grid;grid-template-columns:repeat(8,1fr);gap:4px;max-width:370px;margin:18px auto;background:#202541;padding:6px;border-radius:12px}
+.cell{aspect-ratio:1;background:#353a55;border-radius:5px}
+.pieces{display:flex;justify-content:space-around;gap:8px;margin:15px 0}
+.piece{width:31%;min-height:100px;border:2px solid #424969;background:#252b4c;border-radius:12px;color:white;padding:8px}
+.piece.selected{border:2px solid #ffda44;background:#373c60}
+.mini{display:grid;grid-template-columns:repeat(3,18px);grid-template-rows:repeat(3,18px);gap:3px;justify-content:center;margin:8px auto}
+.mini i{display:block;border-radius:3px}
+button{cursor:pointer}
+.action{border:0;border-radius:12px;padding:13px 20px;background:#ed318c;color:white;font-size:16px;margin:5px}
+#home{padding-top:20px}
+.gamebtn{width:100%;padding:20px;background:#272e54;color:white;border:2px solid #514a9c;border-radius:15px;font-size:20px}
 #game{display:none}
+#message{min-height:24px;color:#ffdb54}
 </style>
 </head>
 <body>
 <header>
 <h1>🎮 SUPER 4 GAMES</h1>
-<p>Play • Enjoy • Win</p>
+<p>PLAY • ENJOY • WIN</p>
 </header>
+
 <div class="container" id="home">
 <h2>Choose Your Game</h2>
-<button class="action" onclick="start()">🧩 Block Puzzle</button>
+<button class="gamebtn" onclick="startGame()">🧩 BLOCK PUZZLE</button>
 <p>🍬 Candy Match - Coming Soon</p>
 <p>🏎️ Car Racing - Coming Soon</p>
 <p>🐍 Snake Game - Coming Soon</p>
 </div>
+
 <div class="container" id="game">
-<h2>🧩 Block Puzzle</h2>
-<div class="stat">
-<div>⭐ Score<br><b id="score">0</b></div>
-<div>🏆 Best<br><b id="best">0</b></div>
-<div>🎯 Level<br><b id="level">1</b></div>
+<h2>🧩 BLOCK PUZZLE</h2>
+<div class="stats">
+<div class="stat">⭐ Score<b id="score">0</b></div>
+<div class="stat">🏆 Best<b id="best">0</b></div>
+<div class="stat">🎯 Level<b id="level">1</b></div>
 </div>
+<p id="message">एक ब्लॉक चुनें और बोर्ड पर जगह चुनें।</p>
 <div id="board"></div>
-<h3>Choose Your Block</h3>
+<h3>अपना ब्लॉक चुनें</h3>
 <div class="pieces" id="pieces"></div>
-<button class="action" onclick="newGame()">New Game</button>
-<button class="action" onclick="home()">Home</button>
+<button class="action" onclick="newGame()">🔄 New Game</button>
+<button class="action" onclick="goHome()">🏠 Home</button>
 </div>
+
 <script>
-let board,score=0,selected=0,shapes=[
-[[0,0]],[[0,0],[0,1]],[[0,0],[1,0]],
-[[0,0],[0,1],[1,0]],[[0,0],[0,1],[0,2]],
-[[0,0],[1,0],[1,1]],[[0,0],[0,1],[1,0],[1,1]],
-[[0,0],[0,1],[0,2],[1,1]]
+const colors=['#ffbd35','#28c5ff','#ff4f80','#55df80','#ad76ff'];
+const shapes=[
+[[0,0]],
+[[0,0],[1,0]],
+[[0,0],[0,1]],
+[[0,0],[1,0],[2,0]],
+[[0,0],[0,1],[0,2]],
+[[0,0],[1,0],[0,1]],
+[[0,0],[1,0],[0,1],[1,1]],
+[[0,0],[1,0],[2,0],[1,1]],
+[[0,0],[0,1],[1,1],[1,2]],
+[[0,0],[1,0],[2,0],[3,0]]
 ];
-let pieces=[];
+let board=[],pieces=[],selected=0,score=0,over=false;
 let best=Number(localStorage.getItem('super4best')||0);
-document.getElementById('best').textContent=best;
-function start(){
-document.getElementById('home').style.display='none';
-document.getElementById('game').style.display='block';
+const $=id=>document.getElementById(id);
+
+function startGame(){
+$('home').style.display='none';
+$('game').style.display='block';
 newGame();
 }
-function home(){
-document.getElementById('game').style.display='none';
-document.getElementById('home').style.display='block';
+function goHome(){
+$('game').style.display='none';
+$('home').style.display='block';
 }
 function newGame(){
-board=Array.from({length:8},()=>Array(8).fill(0));
-score=0;update();makePieces();
+board=Array.from({length:8},()=>Array(8).fill(null));
+score=0;over=false;
+$('message').textContent='एक ब्लॉक चुनें और बोर्ड पर जगह चुनें।';
+makePieces();render();
 }
 function makePieces(){
-pieces=Array.from({length:3},()=>shapes[Math.floor(Math.random()*shapes.length)]);
+pieces=Array.from({length:3},()=>({
+shape:shapes[Math.floor(Math.random()*shapes.length)],
+color:colors[Math.floor(Math.random()*colors.length)]
+}));
 selected=0;showPieces();
 }
 function showPieces(){
-let el=document.getElementById('pieces');el.innerHTML='';
+let el=$('pieces');el.innerHTML='';
 pieces.forEach((p,i)=>{
 let b=document.createElement('button');
 b.className='piece'+(selected===i?' selected':'');
-b.textContent=p.map(()=> '🟨').join('');
-b.onclick=()=>{selected=i;showPieces()};
+let mini=document.createElement('div');mini.className='mini';
+let maxX=Math.max(...p.shape.map(a=>a[0]));
+let maxY=Math.max(...p.shape.map(a=>a[1]));
+mini.style.gridTemplateColumns=`repeat(${maxX+1},18px)`;
+mini.style.gridTemplateRows=`repeat(${maxY+1},18px)`;
+for(let n=0;n<(maxX+1)*(maxY+1);n++){
+let cell=document.createElement('i');
+if(p.shape.some(([x,y])=>y*(maxX+1)+x===n))cell.style.background=p.color;
+mini.appendChild(cell);
+}
+b.appendChild(mini);
+b.onclick=()=>{if(over)return;selected=i;showPieces()};
 el.appendChild(b);
 });
 }
-function update(){
-document.getElementById('score').textContent=score;
-document.getElementById('best').textContent=best;
-document.getElementById('level').textContent=Math.floor(score/50)+1;
-let el=document.getElementById('board');el.innerHTML='';
-board.forEach((row,y)=>row.forEach((v,x)=>{
-let c=document.createElement('div');
-c.className='cell';
-if(v)c.style.background=v;
+function render(){
+$('score').textContent=score;
+$('best').textContent=best;
+$('level').textContent=Math.floor(score/100)+1;
+let el=$('board');el.innerHTML='';
+board.forEach((row,y)=>row.forEach((value,x)=>{
+let c=document.createElement('div');c.className='cell';
+if(value)c.style.background=value;
 c.onclick=()=>place(x,y);
 el.appendChild(c);
 }));
 }
+function canPlace(p,x,y){
+return p.shape.every(([dx,dy])=>
+x+dx<8&&y+dy<8&&x+dx>=0&&y+dy>=0&&!board[y+dy][x+dx]);
+}
 function place(x,y){
+if(over)return;
 let p=pieces[selected];if(!p)return;
-if(!p.every(([dx,dy])=>x+dx<8&&y+dy<8&&!board[y+dy][x+dx])){
-return alert('यहाँ जगह नहीं है!');
+if(!canPlace(p,x,y)){
+$('message').textContent='यहाँ जगह नहीं है। दूसरी जगह चुनें!';
+return;
 }
-p.forEach(([dx,dy])=>board[y+dy][x+dx]='#'+['ffb52e','42c9ff','ed55b5','70dc78'][Math.floor(Math.random()*4)]);
-score+=p.length;
-let lines=0;
-for(let r=0;r<8;r++)if(board[r].every(v=>v)){board[r].fill(0);lines++}
-for(let c=0;c<8;c++)if(board.every(row=>row[c])){
-for(let r=0;r<8;r++)board[r][c]=0;lines++;
+p.shape.forEach(([dx,dy])=>board[y+dy][x+dx]=p.color);
+score+=p.shape.length;
+let fullRows=[],fullCols=[];
+for(let r=0;r<8;r++)if(board[r].every(v=>v))fullRows.push(r);
+for(let c=0;c<8;c++)if(board.every(row=>row[c]))fullCols.push(c);
+fullRows.forEach(r=>board[r].fill(null));
+fullCols.forEach(c=>{for(let r=0;r<8;r++)board[r][c]=null});
+let cleared=fullRows.length+fullCols.length;
+if(cleared)score+=cleared*20+cleared*cleared*10;
+if(score>best){
+best=score;localStorage.setItem('super4best',best);
 }
-score+=lines*10;
-if(score>best){best=score;localStorage.setItem('super4best',best)}
-pieces[selected]=null;update();
-if(pieces.every(v=>v===null))makePieces();else showPieces();
-if(!pieces.some(p=>p&&p.some(([dx,dy])=>board.some((row,r)=>row.some((v,c)=>!v&&p.every(([a,b])=>c+a<8&&r+b<8&&!board[r+b][c+a])))))){
-alert('Game Over! Score: '+score);newGame();
+pieces[selected]=null;
+if(pieces.every(v=>v===null))makePieces();
+else showPieces();
+render();
+if(cleared)$('message').textContent='✨ शानदार! '+cleared+' लाइन क्लियर!';
+else $('message').textContent='अच्छा खेल रहे हैं! अगला ब्लॉक चुनें।';
+if(!pieces.some(p=>p&&board.some((row,y)=>row.some((v,x)=>canPlace(p,x,y))))){
+over=true;
+$('message').textContent='🏆 Game Over! आपका स्कोर: '+score;
+setTimeout(()=>alert('Game Over! Score: '+score+' | New Game दबाकर फिर खेलें।'),100);
 }
 }
+render();
 </script>
 </body>
 </html>
