@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<title>Super 3D Block Puzzle</title>
+<style>
+*{box-sizing:border-box}body{margin:0;min-height:100vh;background:radial-gradient(circle at top,#263c67,#0b1225 70%);color:#fff;font-family:Arial,sans-serif;text-align:center;touch-action:pan-y}
+header{padding:18px 10px 8px}h1{margin:0;font-size:27px;letter-spacing:1px;text-shadow:0 3px 12px #00d9ff}#score{font-size:19px;margin:8px}
+.wrap{max-width:430px;margin:auto;padding:8px 14px 24px}
+.board-frame{padding:10px;border-radius:22px;background:linear-gradient(145deg,#6c8fb8,#142d50 35%,#071326 75%);box-shadow:0 12px 0 #06101e,0 18px 28px #0009,inset 0 2px 5px #ffffff80}
+#board{display:grid;grid-template-columns:repeat(10,1fr);gap:4px;padding:8px;border-radius:15px;background:linear-gradient(145deg,#101e35,#203b5c);box-shadow:inset 0 5px 12px #000b,inset 0 -2px 4px #ffffff20}
+.cell{aspect-ratio:1;border-radius:5px;background:linear-gradient(145deg,#263b58,#14253d);box-shadow:inset 0 2px 4px #0009,inset 0 -1px 2px #ffffff12}
+.cell.filled{background:linear-gradient(145deg,#62e8ff,#1689db 55%,#07518e);box-shadow:0 3px 0 #063c70,0 5px 7px #0008,inset 0 2px 3px #ffffffa8}
+.cell.preview{background:linear-gradient(145deg,#8dffcf,#20c987);box-shadow:0 0 12px #35ffc4,0 2px 0 #08734e}
+.pieces{display:flex;justify-content:space-around;align-items:center;gap:8px;margin:24px 0 16px;min-height:105px}
+.piece{width:30%;min-height:92px;display:flex;align-items:center;justify-content:center;border-radius:14px;background:#ffffff0b;border:1px solid #ffffff1c;touch-action:none;position:relative}
+.shape{display:grid;grid-template-columns:repeat(4,20px);grid-template-rows:repeat(4,20px);gap:3px;pointer-events:none}
+.mini{width:20px;height:20px;border-radius:5px;background:linear-gradient(145deg,#ffe28a,#f39b23);box-shadow:0 2px 0 #96540c,0 3px 4px #0008}
+.ghost{position:fixed;z-index:20;pointer-events:none;opacity:.95;transform:translate(-50%,-50%);filter:drop-shadow(0 7px 8px #0009)}
+.ghost .mini{width:25px;height:25px}
+button{border:0;border-radius:24px;padding:12px 28px;background:linear-gradient(145deg,#29d6ff,#0878d1);color:white;font-weight:bold;font-size:16px;box-shadow:0 4px 0 #064d85}
+#message{min-height:24px;color:#a9eaff;font-size:14px}
+</style>
+</head>
+<body>
+<header><h1>SUPER 3D BLOCK PUZZLE</h1><div id="score">स्कोर: 0</div></header>
+<div class="wrap">
+ <div class="board-frame"><div id="board"></div></div>
+ <div id="message">ब्लॉक को दबाकर बोर्ड पर खिसकाएँ</div>
+ <div class="pieces" id="pieces"></div>
+ <button onclick="restart()">नया गेम</button>
+</div>
+<script>
+const boardEl=document.getElementById('board'), piecesEl=document.getElementById('pieces'), scoreEl=document.getElementById('score'), msg=document.getElementById('message');
+let grid,score,choices=[],drag=null;
+const shapes=[[[0,0],[1,0],[2,0],[3,0]],[[0,0],[0,1],[0,2],[0,3]],[[0,0],[1,0],[0,1],[1,1]],[[0,0],[1,0],[2,0],[1,1]],[[0,0],[0,1],[1,1],[2,1]],[[0,0],[1,0],[2,0],[2,1]],[[0,0],[1,0],[1,1],[2,1]],[[1,0],[2,0],[0,1],[1,1]],[[0,0],[1,0],[2,0],[0,1],[1,1],[2,1]],[[0,0],[1,0],[0,1],[0,2]]];
+function restart(){grid=Array.from({length:10},()=>Array(10).fill(0));score=0;scoreEl.textContent='स्कोर: 0';newPieces();render()}
+function newPieces(){choices=Array.from({length:3},()=>shapes[Math.floor(Math.random()*shapes.length)]);renderPieces()}
+function render(){boardEl.innerHTML='';for(let r=0;r<10;r++)for(let c=0;c<10;c++){let d=document.createElement('div');d.className='cell'+(grid[r][c]?' filled':'');d.dataset.r=r;d.dataset.c=c;boardEl.appendChild(d)}}
+function renderPieces(){piecesEl.innerHTML='';choices.forEach((shape,i)=>{let p=document.createElement('div');p.className='piece';p.dataset.i=i;let s=document.createElement('div');s.className='shape';shape.forEach(([x,y])=>{let b=document.createElement('div');b.className='mini';b.style.gridColumn=x+1;b.style.gridRow=y+1;s.appendChild(b)});p.appendChild(s);p.addEventListener('pointerdown',e=>startDrag(e,i,p));piecesEl.appendChild(p)})}
+function startDrag(e,i,el){if(!choices[i])return;e.preventDefault();let sh=choices[i];let g=document.createElement('div');g.className='ghost';g.innerHTML='<div class="shape"></div>';let gs=g.firstChild;sh.forEach(([x,y])=>{let b=document.createElement('div');b.className='mini';b.style.gridColumn=x+1;b.style.gridRow=y+1;gs.appendChild(b)});document.body.appendChild(g);drag={i,shape:sh,ghost:g};moveDrag(e);document.addEventListener('pointermove',moveDrag,{passive:false});document.addEventListener('pointerup',endDrag,{once:true})}
+function moveDrag(e){if(!drag)return;e.preventDefault();drag.x=e.clientX;drag.y=e.clientY;drag.ghost.style.left=e.clientX+'px';drag.ghost.style.top=(e.clientY-55)+'px';preview(e.clientX,e.clientY-55)}
+function preview(x,y){document.querySelectorAll('.preview').forEach(n=>n.classList.remove('preview'));let el=document.elementFromPoint(x,y);if(!el||!el.classList.contains('cell'))return;let r=+el.dataset.r,c=+el.dataset.c;let minX=Math.min(...drag.shape.map(p=>p[0])),minY=Math.min(...drag.shape.map(p=>p[1]));drag.anchor={r:r-minY,c:c-minX};if(canPlace(drag.shape,drag.anchor.r,drag.anchor.c))drag.shape.forEach(([sx,sy])=>{let cell=boardEl.children[(drag.anchor.r+sy)*10+drag.anchor.c+sx];if(cell)cell.classList.add('preview')})}
+function canPlace(sh,r,c){return sh.every(([x,y])=>r+y>=0&&r+y<10&&c+x>=0&&c+x<10&&!grid[r+y][c+x])}
+function endDrag(){document.removeEventListener('pointermove',moveDrag);if(!drag)return;let a=drag.anchor;if(a&&canPlace(drag.shape,a.r,a.c)){drag.shape.forEach(([x,y])=>grid[a.r+y][a.c+x]=1);score+=drag.shape.length;let clearRows=[];for(let r=0;r<10;r++)if(grid[r].every(Boolean))clearRows.push(r);let clearCols=[];for(let c=0;c<10;c++)if(grid.every(row=>row[c]))clearCols.push(c);clearRows.forEach(r=>grid[r].fill(0));clearCols.forEach(c=>grid.forEach(row=>row[c]=0));score+=(clearRows.length+clearCols.length)*10;scoreEl.textContent='स्कोर: '+score;choices[drag.i]=null;if(choices.every(x=>!x))newPieces();else renderPieces();render();msg.textContent='शाबाश! अगला ब्लॉक लगाएँ';if(!choices.some(sh=>sh&&shapesFit(sh)))msg.textContent='गेम खत्म! नया गेम दबाएँ'}else msg.textContent='यहाँ ब्लॉक नहीं लग सकता';drag.ghost.remove();drag=null;document.querySelectorAll('.preview').forEach(n=>n.classList.remove('preview'))}
+function shapesFit(sh){for(let r=0;r<10;r++)for(let c=0;c<10;c++)if(canPlace(sh,r,c))return true;return false}
+restart();
+</script>
+</body></html>
